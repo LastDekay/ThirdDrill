@@ -22,13 +22,11 @@ function Characters({ charaSelected }) {
 	if (error) return `Error! ${error.message}`;
 
 	return (
-		<select name="Character" onChange={charaSelected}>
-			{data.character.map((character) => (
-				<option key={character.id} value={character.breed}>
-					{character.breed}
-				</option>
-			))}
-		</select>
+		<div>
+			{data.character.map((cha) => {
+				return <h2 key={cha.id}>{cha.name}</h2>;
+			})}
+		</div>
 	);
 }
 
