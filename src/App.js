@@ -1,25 +1,64 @@
-import logo from './logo.svg';
-import './App.css';
+import { gql, useQuery, useMutation } from '@apollo/client';
+import { ApolloProvider } from '@apollo/client';
+import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+const GETCHARACTER = gql`
+	query getCharacters {
+		character {
+			id
+			name
+		}
+	}
+`;
+
+const ADDCHARACTER = gql`
+	mutation addCharacter {
+		insert_character_one(object: { name: "Hero" }) {
+			id
+			name
+		}
+	}
+`;
+
+function Characters({ charaSelected }) {
+	const { loading, error, data } = useQuery(GETCHARACTER);
+	const [addCharacter] = useMutation(ADDCHARACTER, {
+		refetchQueries: [{ query: GETCHARACTER }, 'getCharacters'],
+	});
+
+	if (loading) return 'Loading...';
+	if (error) return `Error! ${error.message}`;
+
+	return (
+		<div>
+			<div>
+				{data.character.map((cha) => {
+					return <h2 key={cha.id}>{cha.name}</h2>;
+				})}
+			</div>
+			<button
+				onClick={() => {
+					addCharacter();
+				}}
+			>
+				Add Character
+			</button>
+		</div>
+	);
 }
+
+const client = new ApolloClient({
+	cache: new InMemoryCache(),
+	link: new HttpLink({
+		uri: 'https://thirddrill.hasura.app/v1/graphql',
+	}),
+});
+
+const App = () => (
+	<ApolloProvider client={client}>
+		<h1>Third Drill</h1>
+		<Characters />
+	</ApolloProvider>
+);
 
 export default App;
