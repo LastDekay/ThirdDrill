@@ -20,9 +20,21 @@ const ADDCHARACTER = gql`
 	}
 `;
 
+const REMOVECHARACTER = gql`
+	mutation removeCharacter($id: uuid = "") {
+		delete_character_by_pk(id: $id) {
+			id
+			name
+		}
+	}
+`;
+
 function Characters({ charaSelected }) {
 	const { loading, error, data } = useQuery(GETCHARACTER);
 	const [addCharacter] = useMutation(ADDCHARACTER, {
+		refetchQueries: [{ query: GETCHARACTER }, 'getCharacters'],
+	});
+	const [removeCharacter] = useMutation(REMOVECHARACTER, {
 		refetchQueries: [{ query: GETCHARACTER }, 'getCharacters'],
 	});
 
@@ -33,7 +45,20 @@ function Characters({ charaSelected }) {
 		<div>
 			<div>
 				{data.character.map((cha) => {
-					return <h2 key={cha.id}>{cha.name}</h2>;
+					return (
+						<div>
+							<h2 key={cha.id}>{cha.name}</h2>
+							<button
+								onClick={() => {
+									removeCharacter({
+										variables: { id: cha.id },
+									});
+								}}
+							>
+								X
+							</button>
+						</div>
+					);
 				})}
 			</div>
 			<button
